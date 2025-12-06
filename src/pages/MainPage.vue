@@ -2,24 +2,20 @@
   <div>
     <h2>Flow Items</h2>
 
-    <div v-if="isLoading">Loading…</div>
-    <div v-else-if="error">Error loading data</div>
+    <div v-if="store.isLoading">Loading…</div>
+    <div v-else-if="store.error">Error: {{ store.error }}</div>
 
-    <pre v-else>{{ data }}</pre>
+    <pre v-else>{{ store.flowData }}</pre>
   </div>
 </template>
 
 <script setup>
-import { useQuery } from '@tanstack/vue-query'
+import { onMounted } from 'vue'
+import { useFlowStore } from '@/stores/flowStore'
 
-async function fetchLocalPayload() {
-  const res = await fetch('/payload.json')
-  if (!res.ok) throw new Error('Failed to load local JSON')
-  return res.json()
-}
+const store = useFlowStore()
 
-const { data, isLoading, error } = useQuery({
-  queryKey: ['flowData'],
-  queryFn: fetchLocalPayload,
+onMounted(() => {
+  store.loadFlowData()
 })
 </script>
