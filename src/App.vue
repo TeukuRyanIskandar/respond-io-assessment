@@ -1,9 +1,11 @@
 <script setup>
+import MainPage from './pages/MainPage.vue';
+
 
 </script>
 
 <template>
-  <h1>Welcome</h1>
+  <MainPage />
 </template>
 
 <style scoped>

@@ -1,5 +1,18 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
+import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query'
 
-createApp(App).mount('#app')
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      networkMode: 'always',
+      staleTime: Infinity,
+      gcTime: 60 * 60 * 1000,
+    },
+  },
+})
+
+createApp(App)
+  .use(VueQueryPlugin, { queryClient })
+  .mount('#app')
