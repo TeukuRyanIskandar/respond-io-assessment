@@ -5,5 +5,5 @@
 </template>
 
 <script setup>
-import Canvas from "@/components/nodes/Canvas.vue";
+import Canvas from "@/components/Canvas.vue";
 </script>

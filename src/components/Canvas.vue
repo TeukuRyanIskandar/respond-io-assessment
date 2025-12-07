@@ -59,6 +59,10 @@ onMounted(async () => {
     id: `${node.parentId}-${node.id}`,
     source: String(node.parentId),
     target: String(node.id),
+    type: "step",
+    style: {
+      strokeWidth: 5,
+    }
   }));
 
 
