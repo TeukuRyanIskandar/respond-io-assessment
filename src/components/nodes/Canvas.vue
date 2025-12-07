@@ -1,9 +1,9 @@
 <template>
+  <Background variant="dots" :gap="16" :size="1" />
   <VueFlow
     v-model:nodes="flowStore.nodes"
     v-model:edges="flowStore.edges"
     :node-types="nodeTypes"
-    class="flow-canvas"
   />
 </template>
 
@@ -11,6 +11,7 @@
 import { onMounted } from "vue";
 import { useFlowStore } from "@/stores/flowStore";
 import { VueFlow } from "@vue-flow/core";
+import { Background } from "@vue-flow/background";
 
 import TriggerNode from "@/components/nodes/TriggerNode.vue";
 import SendMessageNode from "@/components/nodes/SendMessageNode.vue";
@@ -32,21 +33,31 @@ onMounted(async () => {
   const res = await fetch("/payload.json");
   const data = await res.json();
 
-  const nodesWithPos = data.map((node, index) => ({
-    ...node,
-    position: node.position || { x: 50 + index * 200, y: 50 },
+  const positionsMap = {
+    1: { x: 600, y: 100 }, // Trigger node
+    d09c08: { x: 600, y: 300 }, // Business hours
+    "161f52": { x: 450, y: 500 }, // Success connector
+    "28c4b9": { x: 850, y: 500 }, // Failure connector
+    b6a0c1: { x: 300, y: 700 }, // Away message
+    b0653a: { x: 800, y: 700 }, // Welcome message
+    e879e4: { x: 800, y: 900 }, // Add comment
+  };
+
+  const nodesWithPos = data.map((node) => ({
+    id: String(node.id), // must be string
+    type: node.type || "default", // fallback type if missing
+    data: {
+      ...node.data,
+      name: node.name || node.data?.name || null,
+    },
+    position: positionsMap[node.id] || { x: 50, y: 50 },
   }));
 
   flowStore.loadFlowData({
     nodes: nodesWithPos,
-    edges: [],
+    edges: [], // edges can be added later
   });
+
+  console.log("Nodes with positions:", nodesWithPos);
 });
 </script>
-
-<style scoped>
-.flow-canvas {
-  width: 100%;
-  height: 100vh;
-}
-</style>

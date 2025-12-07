@@ -1,15 +1,19 @@
 <template>
-  <div class="node datetime-connector-node">
-    <h4>{{ data.name || "Connector" }}</h4>
-    <p>Type: {{ data.connectorType }}</p>
-  </div>
+  <Card>
+    <CardHeader>
+      <CardTitle>
+        {{ data.connectorType }}
+      </CardTitle>
+    </CardHeader>
+  </Card>
 </template>
 
 <script setup>
+import { Card, CardHeader, CardTitle } from "../ui/card";
 defineProps({
   id: String,
-  data: Object
-})
+  data: Object,
+});
 </script>
 
 <style scoped>

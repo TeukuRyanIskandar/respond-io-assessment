@@ -1,5 +1,7 @@
 <template>
-  <Canvas />
+  <div class="w-full h-screen">
+    <Canvas />
+  </div>
 </template>
 
 <script setup>

@@ -1,37 +1,23 @@
 <template>
-  <div class="node send-message-node">
-    <h4>{{ data.name || "Send Message" }}</h4>
+  <Card class="max-w-xs">
+    <CardHeader>
+      <CardTitle>
+        {{ data.name || "Send Message" }}
+      </CardTitle>
+    </CardHeader>
 
-    <div v-for="(msg, i) in data.payload" :key="i">
-      <p v-if="msg.type === 'text'">{{ msg.text }}</p>
-
-      <img
-        v-else-if="msg.type === 'attachment'"
-        :src="msg.attachment"
-        alt="Attachment"
-        class="attachment"
-      />
-    </div>
-  </div>
+    <CardContent v-for="(msg, i) in data.payload" :key="i">
+      <p>{{ msg.text }}</p>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup>
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+
 defineProps({
   id: String,
-  data: Object
-})
+  name: String,
+  data: Object,
+});
 </script>
-
-<style scoped>
-.send-message-node {
-  padding: 12px;
-  background: #eef7ff;
-  border: 1px solid #8bb7e0;
-  border-radius: 6px;
-}
-.attachment {
-  width: 120px;
-  margin-top: 8px;
-  border-radius: 4px;
-}
-</style>

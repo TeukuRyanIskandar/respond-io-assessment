@@ -1,22 +1,18 @@
 <template>
-  <div class="node datetime-connector-node">
-    <h4>{{ data.name || "Connector" }}</h4>
-    <p>{{ data.comment }}</p>
-  </div>
+  <Card>
+    <CardHeader class=""><Zap /> Add Comment </CardHeader>
+    <CardContent>
+      <p>User message during off hours</p>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup>
+import { Card, CardHeader, CardContent } from "../ui/card";
+import { Zap } from "lucide-vue-next";
+
 defineProps({
   id: String,
-  data: Object
-})
+  data: Object,
+});
 </script>
-
-<style scoped>
-.datetime-connector-node {
-  padding: 12px;
-  background: #fff;
-  border: 1px dashed #888;
-  border-radius: 6px;
-}
-</style>

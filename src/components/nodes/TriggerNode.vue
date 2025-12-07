@@ -1,6 +1,10 @@
 <template>
   <Card>
-    <CardHeader class="border border-black"> <Zap /> Trigger </CardHeader>
+    <CardHeader class="">
+      <CardTitle>
+        <Zap /> Trigger 
+      </CardTitle>
+    </CardHeader>
     <CardContent>
       <p>Conversation Opened</p>
     </CardContent>
@@ -8,7 +12,7 @@
 </template>
 
 <script setup>
-import { Card, CardHeader, CardContent } from "../ui/card";
+import { Card, CardHeader, CardContent, CardTitle } from "../ui/card";
 import { Zap } from "lucide-vue-next";
 
 defineProps({

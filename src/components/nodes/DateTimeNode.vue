@@ -1,31 +1,22 @@
 <template>
-  <div class="node datetime-node">
-    <h4>Business Hours</h4>
-
-    <div class="hours" v-for="(t, i) in data.times" :key="i">
-      <p>{{ t.day }}: {{ t.startTime }} - {{ t.endTime }}</p>
-    </div>
-
-    <p>Timezone: {{ data.timezone }}</p>
-    <p>Action: {{ data.action }}</p>
-  </div>
+  <Card>
+    <CardHeader class="">
+      <CardTitle>
+        <Zap /> Business Hours 
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p>Business Hours - UTC</p>
+    </CardContent>
+  </Card>
 </template>
 
 <script setup>
+import { Card, CardHeader, CardContent, CardTitle } from "../ui/card";
+import { Zap } from "lucide-vue-next";
+
 defineProps({
   id: String,
-  data: Object
-})
+  data: Object,
+});
 </script>
-
-<style scoped>
-.datetime-node {
-  padding: 12px;
-  background: #e8ffe8;
-  border: 1px solid #86c786;
-  border-radius: 6px;
-}
-.hours {
-  font-size: 12px;
-}
-</style>
