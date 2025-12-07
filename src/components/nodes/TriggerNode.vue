@@ -2,7 +2,7 @@
   <Card>
     <CardHeader class="">
       <CardTitle>
-        <Zap /> Trigger 
+        <Zap class="text-rose-500"/> Trigger 
       </CardTitle>
     </CardHeader>
     <CardContent>
