@@ -2,7 +2,7 @@
   <Card class="max-w-xs">
     <CardHeader>
       <CardTitle>
-        {{ data.name || "Send Message" }}
+        <SendHorizontal class="text-green-700"/> {{ data.name || "Send Message" }}
       </CardTitle>
     </CardHeader>
 
@@ -14,6 +14,7 @@
 
 <script setup>
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { SendHorizontal } from "lucide-vue-next";
 
 defineProps({
   id: String,

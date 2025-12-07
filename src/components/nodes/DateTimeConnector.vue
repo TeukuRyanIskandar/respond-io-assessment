@@ -1,8 +1,16 @@
 <template>
-  <Card>
+  <Card
+    :class="[
+      data?.connectorType === 'success'
+        ? 'text-blue-700 bg-blue-400'
+        : data?.connectorType === 'failure'
+        ? 'text-red-700 bg-red-400'
+        : 'bg-gray-200 text-gray-800'
+    ]"
+  >
     <CardHeader>
       <CardTitle>
-        {{ data.connectorType }}
+        {{ data.name || name }}
       </CardTitle>
     </CardHeader>
   </Card>
@@ -10,17 +18,10 @@
 
 <script setup>
 import { Card, CardHeader, CardTitle } from "../ui/card";
+
 defineProps({
   id: String,
+  name: String,
   data: Object,
 });
 </script>
-
-<style scoped>
-.datetime-connector-node {
-  padding: 12px;
-  background: #fff;
-  border: 1px dashed #888;
-  border-radius: 6px;
-}
-</style>

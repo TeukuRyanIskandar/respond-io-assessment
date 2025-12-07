@@ -1,8 +1,8 @@
 <template>
   <Card>
-    <CardHeader class="">
+    <CardHeader>
       <CardTitle>
-        <Zap /> Business Hours 
+        <CalendarDays class="text-amber-500"/> Business Hours 
       </CardTitle>
     </CardHeader>
     <CardContent>
@@ -13,7 +13,7 @@
 
 <script setup>
 import { Card, CardHeader, CardContent, CardTitle } from "../ui/card";
-import { Zap } from "lucide-vue-next";
+import { CalendarDays } from "lucide-vue-next";
 
 defineProps({
   id: String,

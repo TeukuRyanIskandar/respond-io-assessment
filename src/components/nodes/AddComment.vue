@@ -1,6 +1,10 @@
 <template>
   <Card>
-    <CardHeader class=""><Zap /> Add Comment </CardHeader>
+    <CardHeader>
+      <CardTitle>
+        <MessageSquareMore class="text-gray-500"/> Add Comment
+      </CardTitle>  
+    </CardHeader>
     <CardContent>
       <p>User message during off hours</p>
     </CardContent>
@@ -8,8 +12,8 @@
 </template>
 
 <script setup>
-import { Card, CardHeader, CardContent } from "../ui/card";
-import { Zap } from "lucide-vue-next";
+import { Card, CardHeader, CardContent, CardTitle } from "../ui/card";
+import { MessageSquareMore } from "lucide-vue-next";
 
 defineProps({
   id: String,
