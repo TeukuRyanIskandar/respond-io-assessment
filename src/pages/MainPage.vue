@@ -1,21 +1,7 @@
 <template>
-  <div>
-    <h2>Flow Items</h2>
-
-    <div v-if="store.isLoading">Loading…</div>
-    <div v-else-if="store.error">Error: {{ store.error }}</div>
-
-    <pre v-else>{{ store.flowData }}</pre>
-  </div>
+  <Canvas />
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useFlowStore } from '@/stores/flowStore'
-
-const store = useFlowStore()
-
-onMounted(() => {
-  store.loadFlowData()
-})
+import Canvas from "@/components/nodes/Canvas.vue";
 </script>
