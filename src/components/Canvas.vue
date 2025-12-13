@@ -10,7 +10,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { useFlowStore } from "@/stores/flowStore";
-import { VueFlow } from "@vue-flow/core";
+import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 
 import Node from "./Node.vue";
@@ -20,8 +20,9 @@ import { POSITIONS_MAP } from "@/constants/flowConstants";
 const flowStore = useFlowStore();
 const nodeTypes = {
   default: Node,
-  // Add other node types if needed
 };
+
+const { addNodes } = useVueFlow()
 
 onMounted(async () => {
   try {

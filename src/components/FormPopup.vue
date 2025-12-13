@@ -10,16 +10,15 @@
               <SelectValue placeholder="Select node type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="send-message">Send Message</SelectItem>
-              <SelectItem value="add-comment">Add Comment</SelectItem>
-              <SelectItem value="business-hours">Business Hours</SelectItem>
+              <SelectItem value="sendMessage">Send Message</SelectItem>
+              <SelectItem value="addComment">Add Comment</SelectItem>
+              <SelectItem value="dateTime">Business Hours</SelectItem>
             </SelectContent>
           </Select>
         </FormControl>
         <FormMessage />
       </FormItem>
     </FormField>
-
     <!-- Title -->
     <FormField name="title">
       <FormItem>
@@ -33,7 +32,6 @@
         <FormMessage />
       </FormItem>
     </FormField>
-
     <!-- Description -->
     <FormField name="description">
       <FormItem>
@@ -53,17 +51,14 @@
 
 <script setup>
 import { reactive } from "vue";
-
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -78,5 +73,14 @@ const form = reactive({
   nodeType: "",
   title: "",
   description: "",
+});
+
+defineExpose({
+  getFormData: () => ({ ...form }),
+  resetForm: () => {
+    form.nodeType = "";
+    form.title = "";
+    form.description = "";
+  }
 });
 </script>
