@@ -1,4 +1,7 @@
 import { defineStore } from "pinia";
+import { nextTick } from "vue";
+
+import { nodePositioning } from "@/utils/nodePositioning";
 
 export const useFlowStore = defineStore("flow", {
   state: () => ({
@@ -65,5 +68,36 @@ export const useFlowStore = defineStore("flow", {
     deleteEdge(edgeId) {
       this.edges = this.edges.filter((e) => e.id !== edgeId);
     },
+    async addNodeWithEdge({ parentId, formData }) {
+      const newNodeId = `node-${Date.now()}`
+
+      const newNode = {
+        id: newNodeId,
+        type: formData.nodeType,
+        position: { x: 0, y: 0 }, // dagre decides
+        data: {
+          name: formData.title,
+          nodeData: {
+            description: formData.description,
+          },
+        },
+      }
+
+      const newEdge = {
+        id: `${parentId}-${newNodeId}`,
+        source: parentId,
+        target: newNodeId,
+        type: 'step',
+        style: { strokeWidth: 5 },
+      }
+
+      this.nodes.push(newNode)
+      this.edges.push(newEdge)
+
+      await nextTick()
+
+      this.nodes = nodePositioning(this.nodes, this.edges)
+    },
+
   },
 });

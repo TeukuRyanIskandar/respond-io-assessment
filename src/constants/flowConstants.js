@@ -7,12 +7,6 @@ import {
   CircleCheck,
 } from "lucide-vue-next";
 
-import TriggerNode from "@/components/nodes/TriggerNode.vue";
-import SendMessageNode from "@/components/nodes/SendMessageNode.vue";
-import DateTimeConnector from "@/components/nodes/DateTimeConnector.vue";
-import DateTimeNode from "@/components/nodes/DateTimeNode.vue";
-import AddComment from "@/components/nodes/AddComment.vue";
-
 export const ICON_MAP = {
   trigger: Zap,
   sendMessage: SendHorizontal,

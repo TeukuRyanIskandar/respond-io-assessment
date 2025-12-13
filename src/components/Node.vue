@@ -33,7 +33,6 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useVueFlow } from "@vue-flow/core";
 import { useFlowStore } from "@/stores/flowStore";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,16 +50,15 @@ const props = defineProps({
   id: String,
   data: Object,
   type: String,
-});
+})
 
-const showDialog = ref(false);
-const formPopupRef = ref(null);
-const flowStore = useFlowStore();
-const { addNodes, addEdges } = useVueFlow();
+const showDialog = ref(false)
+const formPopupRef = ref(null)
+const flowStore = useFlowStore()
 
-const displayTitle = computed(() => {
-  return props.data.name || props.data.nodeData?.name || props.type || "Node";
-});
+const displayTitle = computed(() =>
+  props.data.name || props.data.nodeData?.name || props.type || 'Node'
+)
 
 const displayDescription = computed(() => {
   const nodeData = props.data.nodeData || props.data.data || {};
@@ -95,86 +93,15 @@ const displayDescription = computed(() => {
 });
 
 const saveChanges = () => {
-  if (!formPopupRef.value) return;
+  const formData = formPopupRef.value.getFormData()
+  if (!formData?.nodeType || !formData?.title) return
 
-  const formData = formPopupRef.value.getFormData();
+  flowStore.addNodeWithEdge({
+    parentId: props.id,
+    formData,
+  })
 
-  // Validate form data
-  if (!formData.nodeType || !formData.title) {
-    console.error("Node type and title are required");
-    return;
-  }
-
-  // Get current node using the store getter
-  const currentNode = flowStore.getNodeById(props.id);
-
-  if (!currentNode) {
-    console.error("Current node not found");
-    return;
-  }
-
-  // Calculate new node position (below current node)
-  const newNodePosition = {
-    x: currentNode.position.x + 50,
-    y: currentNode.position.y + 150,
-  };
-
-  // Generate new node ID
-  const newNodeId = `node-${Date.now()}`;
-
-  // Create new node based on form data
-  const newNode = {
-    id: newNodeId,
-    type: formData.nodeType,
-    position: newNodePosition,
-    data: {
-      name: formData.title,
-      nodeData: {
-        description: formData.description,
-        // Add additional fields based on node type
-        ...(formData.nodeType === "sendMessage" && {
-          payload: [
-            {
-              type: "text",
-              text: formData.description || "",
-            },
-          ],
-        }),
-        ...(formData.nodeType === "addComment" && {
-          comment: formData.description,
-        }),
-        ...(formData.nodeType === "dateTime" && {
-          times: [],
-          timezone: "UTC",
-          action: "businessHours",
-        }),
-      },
-    },
-  };
-
-  // Create edge connecting current node to new node
-  const newEdge = {
-    id: `${props.id}-${newNodeId}`,
-    source: props.id,
-    target: newNodeId,
-    type: "step",
-    style: {
-      strokeWidth: 5,
-    },
-  };
-
-  // Add node and edge to VueFlow
-  addNodes([newNode]);
-  addEdges([newEdge]);
-
-  // Update store
-  flowStore.addNode(newNode);
-  flowStore.addEdge(newEdge);
-
-  console.log("Created new node:", newNode);
-
-  // Reset form and close dialog
-  formPopupRef.value.resetForm();
-  showDialog.value = false;
-};
+  formPopupRef.value.resetForm()
+  showDialog.value = false
+}
 </script>

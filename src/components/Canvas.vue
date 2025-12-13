@@ -8,56 +8,49 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { useFlowStore } from "@/stores/flowStore";
-import { VueFlow, useVueFlow } from "@vue-flow/core";
-import { Background } from "@vue-flow/background";
+import { onMounted, nextTick } from 'vue'
+import { VueFlow } from '@vue-flow/core'
+import { Background } from '@vue-flow/background'
+import { useFlowStore } from '@/stores/flowStore'
+import { nodePositioning } from '@/utils/nodePositioning'
+import Node from './Node.vue'
 
-import Node from "./Node.vue";
+const flowStore = useFlowStore()
 
-import { POSITIONS_MAP } from "@/constants/flowConstants";
-
-const flowStore = useFlowStore();
 const nodeTypes = {
   default: Node,
-};
-
-const { addNodes } = useVueFlow()
+}
 
 onMounted(async () => {
-  try {
-    const response = await fetch("/payload.json");
-    const data = await response.json();
+  const res = await fetch('/payload.json')
+  const data = await res.json()
 
-    const nodesWithPos = data.map((node) => ({
-      id: String(node.id),
-      type: node.type || "default",
-      data: {
-        ...node,
-        name: node.name || node.data?.name || null,
-        nodeData: node.data,
-      },
-      position: POSITIONS_MAP[node.id] || { x: 50, y: 50 },
-    }));
+  const nodes = data.map((node) => ({
+    id: String(node.id),
+    type: node.type || 'default',
+    data: {
+      ...node,
+      name: node.name || node.data?.name || null,
+      nodeData: node.data,
+    },
+    position: { x: 0, y: 0 },
+  }))
 
-    const edges = data
-      .filter((node) => node.parentId && node.parentId !== -1)
-      .map((node) => ({
-        id: `${node.parentId}-${node.id}`,
-        source: String(node.parentId),
-        target: String(node.id),
-        type: "step",
-        style: {
-          strokeWidth: 5,
-        },
-      }));
+  const edges = data
+    .filter((n) => n.parentId && n.parentId !== -1)
+    .map((n) => ({
+      id: `${n.parentId}-${n.id}`,
+      source: String(n.parentId),
+      target: String(n.id),
+      type: 'step',
+      style: { strokeWidth: 5 },
+    }))
 
-    flowStore.loadFlowData({
-      nodes: nodesWithPos,
-      edges: edges,
-    });
-  } catch (error) {
-    console.error("Error loading flow data:", error);
-  }
-});
+  const layoutedNodes = nodePositioning(nodes, edges)
+
+  flowStore.loadFlowData({
+    nodes: layoutedNodes,
+    edges,
+  })
+})
 </script>
