@@ -9,16 +9,48 @@
       </CardContent>
     </Card>
 
-    <Button class="rounded-full" variant="outline" size="icon">
+    <Button 
+      class="rounded-full" 
+      variant="outline" 
+      size="icon"
+      @click="showDialog = true"
+    >
       <Plus />
     </Button>
+
+    <Dialog :open="showDialog" @update:open="showDialog = $event">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create new node</DialogTitle>
+        </DialogHeader>
+        <FormPopup />        
+        <DialogFooter>
+          <Button variant="outline" @click="showDialog = false">Cancel</Button>
+          <Button @click="saveChanges">Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { ref, computed } from "vue";
+import { 
+  Card, 
+  CardHeader, 
+  CardContent, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { 
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { Plus } from "lucide-vue-next";
+import FormPopup from "./FormPopup.vue";
 
 const props = defineProps({
   id: String,
@@ -26,7 +58,7 @@ const props = defineProps({
   type: String,
 });
 
-import { computed } from "vue";
+const showDialog = ref(false);
 
 const displayTitle = computed(() => {
   return props.data.name || props.data.nodeData?.name || props.type || "Node";
@@ -72,4 +104,33 @@ const displayDescription = computed(() => {
       return JSON.stringify(nodeData, null, 2);
   }
 });
+
+// Helper function to update data
+const updateData = (field, value) => {
+  // In a real app, you would emit an event or update a store
+  console.log(`Update ${field} to:`, value);
+};
+
+// Helper for message text (sendMessage type)
+const messageText = computed(() => {
+  if (props.type !== 'sendMessage') return '';
+  const messages = props.data.nodeData?.payload || [];
+  const textMessage = messages.find(m => m.type === 'text');
+  return textMessage?.text || '';
+});
+
+const updateMessageText = (value) => {
+  console.log('Update message text to:', value);
+};
+
+// Helper for nodeData fields
+const updateNodeData = (field, value) => {
+  console.log(`Update nodeData.${field} to:`, value);
+};
+
+const saveChanges = () => {
+  // Save logic here
+  console.log('Saving changes for node:', props.id);
+  showDialog.value = false;
+};
 </script>

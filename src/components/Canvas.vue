@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { useFlowStore } from "@/stores/flowStore";
 import { VueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
