@@ -7,6 +7,7 @@ export const useFlowStore = defineStore("flow", {
   state: () => ({
     nodes: [],
     edges: [],
+    selectedNodeId: null,
   }),
 
   getters: {
@@ -30,12 +31,26 @@ export const useFlowStore = defineStore("flow", {
     getEdgeById: (state) => (edgeId) => {
       return state.edges.find((edge) => edge.id === edgeId);
     },
+
+    selectedNode: (state) => {
+      return (
+        state.nodes.find((node) => node.id === state.selectedNodeId) || null
+      );
+    },
   },
 
   actions: {
     loadFlowData(data) {
       this.nodes = data.nodes || [];
       this.edges = data.edges || [];
+    },
+
+    selectNode(nodeId) {
+      this.selectedNodeId = nodeId;
+    },
+
+    clearSelection() {
+      this.selectedNodeId = null;
     },
 
     clearNode() {
@@ -69,7 +84,7 @@ export const useFlowStore = defineStore("flow", {
       this.edges = this.edges.filter((e) => e.id !== edgeId);
     },
     async addNodeWithEdge({ parentId, formData }) {
-      const newNodeId = `node-${Date.now()}`
+      const newNodeId = `node-${Date.now()}`;
 
       const newNode = {
         id: newNodeId,
@@ -81,23 +96,22 @@ export const useFlowStore = defineStore("flow", {
             description: formData.description,
           },
         },
-      }
+      };
 
       const newEdge = {
         id: `${parentId}-${newNodeId}`,
         source: parentId,
         target: newNodeId,
-        type: 'step',
+        type: "step",
         style: { strokeWidth: 5 },
-      }
+      };
 
-      this.nodes.push(newNode)
-      this.edges.push(newEdge)
+      this.nodes.push(newNode);
+      this.edges.push(newEdge);
 
-      await nextTick()
+      await nextTick();
 
-      this.nodes = nodePositioning(this.nodes, this.edges)
+      this.nodes = nodePositioning(this.nodes, this.edges);
     },
-
   },
 });

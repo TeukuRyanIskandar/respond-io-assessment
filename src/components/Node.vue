@@ -1,5 +1,8 @@
 <template>
-  <div class="flex flex-col items-center">
+  <div 
+    class="flex flex-col items-center"
+    @click.stop="flowStore.selectNode(props.id)"  
+  >
     <Card>
       <CardHeader>
         <CardTitle>{{ displayTitle }}</CardTitle>
