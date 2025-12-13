@@ -5,7 +5,6 @@ import { createPinia } from 'pinia'
 import './style.css'
 
 import '@vue-flow/core/dist/style.css';
-import '@vue-flow/core/dist/theme-default.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
