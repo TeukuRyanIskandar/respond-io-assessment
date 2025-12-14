@@ -1,5 +1,9 @@
 <template>
-  <SheetContent side="right" class="w-[420px]" :class="[drawerBackground]">
+  <SheetContent
+    side="right"
+    class="w-[420px] flex flex-col"
+    :class="[drawerBackground]"
+  >
     <SheetHeader>
       <SheetTitle class="flex items-center gap-2">
         <component :is="drawerIcon" class="w-5 h-5" :class="[iconTextColour]" />
@@ -9,24 +13,65 @@
         {{ displayDescription || "Node description" }}
       </SheetDescription>
     </SheetHeader>
-    <div v-if="showDetailsSection && drawerComponent" class="mt-4 space-y-4">
+    <div
+      v-if="showDetailsSection && drawerComponent"
+      class="mt-4 space-y-4 flex-1 overflow-auto"
+    >
       <component :is="drawerComponent" />
     </div>
+    <SheetFooter class="mt-auto pt-6">
+      <AlertDialog>
+        <AlertDialogTrigger as-child>
+          <Button variant="destructive" class="ml-auto">Delete</Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Node?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deleting a node will also delete it's children
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              @click="handleDelete"
+              class="bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SheetFooter>
   </SheetContent>
 </template>
 
 <script setup>
+import { useFlowStore } from "@/stores/flowStore";
+import { computed } from "vue";
+
 import {
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetFooter,
 } from "@/components/ui/sheet";
-import { useFlowStore } from "@/stores/flowStore";
-import { computed } from "vue";
-import AddComment from "./drawerContent/AddComment.vue";
-import SendMessage from "./drawerContent/SendMessage.vue";
-import DateTime from "./drawerContent/DateTime.vue";
+
+import { Button } from "@/components/ui/button";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import {
   CalendarDays,
   CircleAlert,
@@ -36,6 +81,10 @@ import {
   Zap,
 } from "lucide-vue-next";
 
+import AddComment from "./drawerContent/AddComment.vue";
+import SendMessage from "./drawerContent/SendMessage.vue";
+import DateTime from "./drawerContent/DateTime.vue";
+
 const flowStore = useFlowStore();
 const node = computed(() => flowStore.selectedNodeNormalized);
 
@@ -44,7 +93,7 @@ const displayTitle = computed(() => node.value?.displayName);
 const displayDescription = computed(() => {
   if (!node.value) return "";
   const data = node.value.nodeData;
-  
+
   switch (node.value.type) {
     case "trigger":
       return `Triggers on: ${
@@ -72,7 +121,7 @@ const showDetailsSection = computed(() => {
 
 const drawerComponent = computed(() => {
   if (!node.value) return null;
-  
+
   switch (node.value.type) {
     case "addComment":
       return AddComment;
@@ -88,7 +137,7 @@ const drawerComponent = computed(() => {
 const drawerIcon = computed(() => {
   if (!node.value) return null;
   const data = node.value.nodeData;
-  
+
   switch (node.value.type) {
     case "trigger":
       return Zap;
@@ -108,7 +157,7 @@ const drawerIcon = computed(() => {
 const drawerBackground = computed(() => {
   if (!node.value) return "";
   const data = node.value.nodeData;
-  
+
   switch (node.value.type) {
     case "trigger":
       return "bg-rose-100";
@@ -128,7 +177,7 @@ const drawerBackground = computed(() => {
 const iconTextColour = computed(() => {
   if (!node.value) return "";
   const data = node.value.nodeData;
-  
+
   switch (node.value.type) {
     case "trigger":
       return "text-rose-600";
@@ -139,9 +188,18 @@ const iconTextColour = computed(() => {
     case "dateTime":
       return "text-amber-600";
     case "dateTimeConnector":
-      return data?.connectorType === "success" ? "text-blue-600" : "text-red-600";
+      return data?.connectorType === "success"
+        ? "text-blue-600"
+        : "text-red-600";
     default:
       return "";
   }
 });
+
+const handleDelete = () => {
+  if (!node.value) return;
+
+  flowStore.deleteNodeAndChildren(node.value.id);
+  flowStore.clearSelection();
+};
 </script>

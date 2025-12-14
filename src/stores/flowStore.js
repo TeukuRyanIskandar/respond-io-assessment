@@ -127,5 +127,20 @@ export const useFlowStore = defineStore("flow", {
 
       this.nodes = nodePositioning(this.nodes, this.edges);
     },
+    deleteNodeAndChildren(nodeId) {
+      // Find all direct children
+      const childEdges = this.edges.filter((e) => e.source === nodeId);
+      const childNodeIds = childEdges.map((e) => e.target);
+
+      childNodeIds.forEach((childId) => {
+        this.deleteNodeAndChildren(childId);
+      });
+
+      this.nodes = this.nodes.filter((n) => n.id !== nodeId);
+
+      this.edges = this.edges.filter(
+        (e) => e.source !== nodeId && e.target !== nodeId
+      );
+    },
   },
 });
