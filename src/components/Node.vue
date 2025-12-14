@@ -1,11 +1,11 @@
 <template>
-  <div
-    class="flex flex-col items-center"
-    @click.stop="handleNodeClick"
-  >
+  <div class="flex flex-col items-center" @click.stop="handleNodeClick">
     <Card :class="[nodeBorder, nodeBackground]">
       <CardHeader>
-        <CardTitle :class="[nodeText]">{{ displayTitle }}</CardTitle>
+        <CardTitle class="flex items-center gap-2" :class="[nodeText]">
+          <component :is="nodeIcon" :class="[nodeIconColour]" v-if="nodeIcon" />
+          {{ displayTitle }}
+        </CardTitle>
       </CardHeader>
       <CardContent v-if="props.type !== 'dateTimeConnector'">
         <p>{{ displayDescription }}</p>
@@ -46,7 +46,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-vue-next";
+import {
+  Plus,
+  Zap,
+  MessageSquareMore,
+  SendHorizonal,
+  CalendarDays,
+  CircleCheck,
+  CircleAlert,
+} from "lucide-vue-next";
 import FormPopup from "./FormPopup.vue";
 
 const props = defineProps({
@@ -138,9 +146,9 @@ const isSelected = computed(() => node.value?.id === props.id);
 const nodeBorder = computed(() => {
   // Only apply border if this node is selected
   if (!isSelected.value) return "";
-  
+
   const data = props.data.nodeData || props.data.data || {};
-  
+
   switch (props.type) {
     case "trigger":
       return "border-2 border-rose-500";
@@ -151,8 +159,8 @@ const nodeBorder = computed(() => {
     case "dateTime":
       return "border-2 border-amber-500";
     case "dateTimeConnector":
-      return data.connectorType === "success" 
-        ? "border-2 border-blue-500" 
+      return data.connectorType === "success"
+        ? "border-2 border-blue-500"
         : "border-2 border-red-500";
     default:
       return "border-2 border-gray-400";
@@ -161,17 +169,45 @@ const nodeBorder = computed(() => {
 
 const nodeBackground = computed(() => {
   if (props.type !== "dateTimeConnector") return "";
-  
+
   const data = props.data.nodeData || props.data.data || {};
-  
-  return data.connectorType === "success" 
-    ? "bg-blue-500" 
-    : "bg-red-500";
+
+  return data.connectorType === "success" ? "bg-blue-500" : "bg-red-500";
 });
 
 const nodeText = computed(() => {
   if (props.type !== "dateTimeConnector") return "";
-  
-  return "text-white"
+
+  return "text-white";
+});
+
+const nodeIcon = computed(() => {
+  switch (props.type) {
+    case "trigger":
+      return Zap;
+    case "addComment":
+      return MessageSquareMore;
+    case "sendMessage":
+      return SendHorizonal;
+    case "dateTime":
+      return CalendarDays;
+    default:
+      return null;
+  }
+});
+
+const nodeIconColour = computed(() => {
+  switch (props.type) {
+    case "trigger":
+      return "text-rose-600";
+    case "addComment":
+      return "text-gray-600";
+    case "sendMessage":
+      return "text-green-600";
+    case "dateTime":
+      return "text-amber-600";
+    default:
+      return "";
+  }
 });
 </script>
