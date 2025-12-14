@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useFlowStore } from "@/stores/flowStore";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,10 +67,15 @@ const showDialog = ref(false);
 const formPopupRef = ref(null);
 const flowStore = useFlowStore();
 
-const node = computed(() => flowStore.selectedNodeNormalized);
+// Get reactive node data from store
+const storeNode = computed(() => flowStore.getNodeById(props.id));
+
+// Reactive node data - combines props with store updates
+const nodeData = computed(() => {
+  return storeNode.value?.data || props.data;
+});
 
 const handleNodeClick = () => {
-  // Only select node if dialog is not open
   if (!showDialog.value) {
     flowStore.selectNode(props.id);
   }
@@ -85,24 +90,23 @@ const handleDialogUpdate = (value) => {
   showDialog.value = value;
 };
 
-const displayTitle = computed(
-  () =>
-    props.data.name ||
-    props.data.nodeData?.name ||
-    (props.type === "trigger" ? "Trigger" : props.type || "Node")
-);
+const displayTitle = computed(() => {
+  return nodeData.value?.name ||
+         nodeData.value?.nodeData?.name ||
+         (props.type === "trigger" ? "Trigger" : props.type || "Node");
+});
 
 const displayDescription = computed(() => {
-  const nodeData = props.data.nodeData || props.data.data || {};
+  const nodeDataValue = nodeData.value?.nodeData || nodeData.value?.data || {};
   switch (props.type) {
     case "trigger":
       return `Triggers on: ${
-        nodeData.type === "conversationOpened"
+        nodeDataValue.type === "conversationOpened"
           ? "opening conversation"
           : "unknown"
       }`;
     case "sendMessage":
-      const messages = nodeData.payload || [];
+      const messages = nodeDataValue.payload || [];
       const textMessages = messages.filter((m) => m.type === "text");
       const attachments = messages.filter((m) => m.type === "attachment");
       if (messages.length === 0) return "No messages";
@@ -116,18 +120,16 @@ const displayDescription = computed(() => {
         parts.push(`${attachments.length} attachment(s)`);
       return parts.join(", ");
     case "dateTime":
-      // Get timezone or default to UTC
-      const timezone = nodeData.timezone || "UTC";
-      // Format timezone nicely
+      const timezone = nodeDataValue.timezone || "UTC";
       return `Business Hours - ${formatTimezoneForDisplay(timezone)}`;
     case "dateTimeConnector":
-      return `Connector: ${nodeData.connectorType || "unknown"}`;
+      return `Connector: ${nodeDataValue.connectorType || "unknown"}`;
     case "addComment":
       return `Comment: ${
-        nodeData.comment?.substring(0, 30) || "No comment"
+        nodeDataValue.comment?.substring(0, 30) || "No comment"
       }...`;
     default:
-      return JSON.stringify(nodeData, null, 2);
+      return JSON.stringify(nodeDataValue, null, 2);
   }
 });
 
@@ -138,12 +140,10 @@ const formatTimezoneForDisplay = (timezone) => {
   try {
     if (timezone === "UTC") return "UTC";
 
-    // Extract city name
     const parts = timezone.split("/");
     const city =
       parts.length > 1 ? parts[parts.length - 1].replace(/_/g, " ") : timezone;
 
-    // Get UTC offset
     const now = new Date();
     const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: timezone,
@@ -153,7 +153,6 @@ const formatTimezoneForDisplay = (timezone) => {
     const tzPart = partsFormatted.find((part) => part.type === "timeZoneName");
 
     if (tzPart) {
-      // Format like "New York (EST)" or "London (GMT+1)"
       const tzAbbr = tzPart.value.replace("GMT", "").replace("UTC", "");
       return `${city} (${tzAbbr})`;
     }
@@ -167,10 +166,8 @@ const formatTimezoneForDisplay = (timezone) => {
 
 const saveChanges = () => {
   const formData = formPopupRef.value.getFormData();
-  console.log("Form data:", formData); // Add this for debugging
   if (!formData?.nodeType || !formData?.title) return;
 
-  // For dateTime nodes, pass the timezone if selected
   const defaultValues = {};
   if (formData.nodeType === "dateTime") {
     defaultValues.timezone = formData.timezone || "UTC";
@@ -186,13 +183,12 @@ const saveChanges = () => {
   showDialog.value = false;
 };
 
-const isSelected = computed(() => node.value?.id === props.id);
+const isSelected = computed(() => flowStore.selectedNodeId === props.id);
 
 const nodeBorder = computed(() => {
-  // Only apply border if this node is selected
   if (!isSelected.value) return "";
 
-  const data = props.data.nodeData || props.data.data || {};
+  const data = nodeData.value?.nodeData || nodeData.value?.data || {};
 
   switch (props.type) {
     case "trigger":
@@ -215,7 +211,7 @@ const nodeBorder = computed(() => {
 const nodeBackground = computed(() => {
   if (props.type !== "dateTimeConnector") return "";
 
-  const data = props.data.nodeData || props.data.data || {};
+  const data = nodeData.value?.nodeData || nodeData.value?.data || {};
 
   return data.connectorType === "success" ? "bg-blue-500" : "bg-red-500";
 });
