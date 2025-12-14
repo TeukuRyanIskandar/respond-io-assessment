@@ -8,26 +8,8 @@
         {{ displayDescription || "Node description" }}
       </SheetDescription>
     </SheetHeader>
-    <div v-if="showDetailsSection" class="mt-4 space-y-4">
-      <div>
-        <p class="text-sm text-muted-foreground">Node ID</p>
-        <p class="font-mono text-sm">
-          {{ flowStore.selectedNode?.id }}
-        </p>
-      </div>
-      <div>
-        <p class="text-sm text-muted-foreground">Type</p>
-        <p class="text-sm">
-          {{ flowStore.selectedNode?.type }}
-        </p>
-      </div>
-      <div>
-        <p class="text-sm text-muted-foreground">Data</p>
-        <pre class="text-xs bg-muted p-3 rounded overflow-auto"
-          >{{ flowStore.selectedNode?.data }}
-            </pre
-        >
-      </div>
+    <div v-if="showDetailsSection && drawerComponent" class="mt-4 space-y-4">
+      <component :is="drawerComponent" />
     </div>
   </SheetContent>
 </template>
@@ -41,14 +23,9 @@ import {
 } from "@/components/ui/sheet";
 import { useFlowStore } from "@/stores/flowStore";
 import { computed } from "vue";
+import AddComment from "./drawerContent/AddComment.vue";
 
 const flowStore = useFlowStore();
-
-const props = defineProps({
-  id: String,
-  data: Object,
-  type: String,
-});
 
 const node = computed(() => flowStore.selectedNodeNormalized);
 
@@ -84,5 +61,22 @@ const displayDescription = computed(() => {
 const showDetailsSection = computed(() => {
   const type = node.value?.type;
   return type !== "trigger" && type !== "dateTimeConnector";
+});
+
+const drawerComponent = computed(() => {
+  if (!node.value) return null;
+
+  switch (node.value.type) {
+    case "addComment":
+      return AddComment;
+
+    // case "sendMessage":
+    //   return SendMessage
+    // case "dateTime":
+    //   return BusinessHours
+
+    default:
+      return null;
+  }
 });
 </script>
