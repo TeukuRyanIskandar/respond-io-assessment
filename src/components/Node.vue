@@ -3,7 +3,7 @@
     class="flex flex-col items-center"
     @click.stop="handleNodeClick"
   >
-    <Card>
+    <Card :class="[nodeBorder]">
       <CardHeader>
         <CardTitle>{{ displayTitle }}</CardTitle>
       </CardHeader>
@@ -58,6 +58,8 @@ const props = defineProps({
 const showDialog = ref(false);
 const formPopupRef = ref(null);
 const flowStore = useFlowStore();
+
+const node = computed(() => flowStore.selectedNodeNormalized);
 
 const handleNodeClick = () => {
   // Only select node if dialog is not open
@@ -130,4 +132,26 @@ const saveChanges = () => {
   formPopupRef.value.resetForm();
   showDialog.value = false;
 };
+
+const isSelected = computed(() => node.value?.id === props.id);
+
+const nodeBorder = computed(() => {
+  // Only apply border if this node is selected
+  if (!isSelected.value) return "";
+  
+  const data = props.data.nodeData || props.data.data || {};
+  
+  switch (props.type) {
+    case "trigger":
+      return "border-2 border-rose-500";
+    case "addComment":
+      return "border-2 border-gray-500";
+    case "sendMessage":
+      return "border-2 border-green-500";
+    case "dateTime":
+      return "border-2 border-amber-500";
+    default:
+      return "";
+  }
+});
 </script>
