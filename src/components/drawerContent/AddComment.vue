@@ -21,7 +21,7 @@ const node = computed(() => flowStore.selectedNodeNormalized);
 
 const comment = computed({
   get() {
-    return node.value?.nodeData?.comment || "Add comment...";
+    return node.value?.nodeData?.comment || "";
   },
   set(value) {
     if (!node.value) return;
