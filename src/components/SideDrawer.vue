@@ -37,21 +37,16 @@
               </h3>
             </div>
           </div>
-          
+
           <!-- Title Action Buttons -->
-          <div v-if="isEditingTitle" class="flex items-center gap-2 pl-[1.75rem]">
-            <Button
-              size="sm"
-              variant="ghost"
-              @click="saveTitle"
-            >
+          <div
+            v-if="isEditingTitle"
+            class="flex items-center gap-2 pl-[1.75rem]"
+          >
+            <Button size="sm" variant="ghost" @click="saveTitle">
               Save Title
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              @click="cancelTitleEdit"
-            >
+            <Button size="sm" variant="ghost" @click="cancelTitleEdit">
               Cancel
             </Button>
           </div>
@@ -59,7 +54,13 @@
       </div>
 
       <!-- Editable Description -->
-      <SheetDescription class="pt-4">
+      <SheetDescription
+        class="pt-4"
+        v-if="
+          flowStore.selectedNode?.type !== 'sendMessage' &&
+          flowStore.selectedNode?.type !== 'addComment'
+        "
+      >
         <div class="space-y-2">
           <div class="relative">
             <Textarea
@@ -81,21 +82,13 @@
               {{ editableDescription || "Click to add description" }}
             </p>
           </div>
-          
+
           <!-- Description Action Buttons -->
           <div v-if="isEditingDescription" class="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              @click="saveDescription"
-            >
+            <Button size="sm" variant="ghost" @click="saveDescription">
               Save Description
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              @click="cancelDescriptionEdit"
-            >
+            <Button size="sm" variant="ghost" @click="cancelDescriptionEdit">
               Cancel
             </Button>
           </div>
@@ -203,12 +196,12 @@ watch(
       const title = newNode.displayName || "";
       editableTitle.value = title;
       originalTitle.value = title;
-      
+
       // Update description
       const description = getNodeDescription(newNode) || "";
       editableDescription.value = description;
       originalDescription.value = description;
-      
+
       // Exit edit modes when node changes
       isEditingTitle.value = false;
       isEditingDescription.value = false;
@@ -220,19 +213,21 @@ watch(
 // Helper function to extract description from node
 const getNodeDescription = (node) => {
   if (!node) return "";
-  
+
   switch (node.type) {
     case "trigger":
       return `Triggers on: ${
-        node.nodeData?.type === "conversationOpened" ? "opening conversation" : "unknown"
+        node.nodeData?.type === "conversationOpened"
+          ? "opening conversation"
+          : "unknown"
       }`;
     case "addComment":
       return node.nodeData?.comment || "";
     case "sendMessage":
       const messages = node.nodeData?.payload || [];
       if (messages.length === 0) return "No messages";
-      
-      const textMessages = messages.filter(m => m.type === "text");
+
+      const textMessages = messages.filter((m) => m.type === "text");
       if (textMessages.length > 0) {
         return textMessages[0].text || "";
       }
@@ -306,12 +301,12 @@ const saveDescription = () => {
   if (!node.value) return;
 
   const description = editableDescription.value.trim();
-  
+
   if (description === originalDescription.value) {
     isEditingDescription.value = false;
     return;
   }
-  
+
   // Update the node based on its type
   let updates = {
     data: {
@@ -326,7 +321,7 @@ const saveDescription = () => {
         comment: description,
       };
       break;
-      
+
     case "sendMessage":
       const messages = node.value.nodeData?.payload || [];
       if (messages.length === 0) {
@@ -337,21 +332,26 @@ const saveDescription = () => {
       } else {
         // Update first text message or add one
         const updatedMessages = [...messages];
-        const textMessageIndex = updatedMessages.findIndex(m => m.type === "text");
-        
+        const textMessageIndex = updatedMessages.findIndex(
+          (m) => m.type === "text"
+        );
+
         if (textMessageIndex !== -1) {
-          updatedMessages[textMessageIndex] = { ...updatedMessages[textMessageIndex], text: description };
+          updatedMessages[textMessageIndex] = {
+            ...updatedMessages[textMessageIndex],
+            text: description,
+          };
         } else if (description) {
           updatedMessages.push({ type: "text", text: description });
         }
-        
+
         updates.data.nodeData = {
           ...(node.value.data?.nodeData || {}),
           payload: updatedMessages,
         };
       }
       break;
-      
+
     case "dateTime":
       // For dateTime nodes, we might want to store a custom description
       updates.data.nodeData = {
@@ -359,7 +359,7 @@ const saveDescription = () => {
         customDescription: description,
       };
       break;
-      
+
     default:
       // For other node types, store in a generic description field
       updates.data.nodeData = {
@@ -380,7 +380,7 @@ const cancelDescriptionEdit = () => {
 
 // Watch for Escape key press
 const handleEscapeKey = (event) => {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     if (isEditingTitle.value) {
       cancelTitleEdit();
     } else if (isEditingDescription.value) {
@@ -390,14 +390,14 @@ const handleEscapeKey = (event) => {
 };
 
 // Add global escape key listener
-if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', handleEscapeKey);
+if (typeof window !== "undefined") {
+  window.addEventListener("keydown", handleEscapeKey);
 }
 
 // Clean up event listener
 onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('keydown', handleEscapeKey);
+  if (typeof window !== "undefined") {
+    window.removeEventListener("keydown", handleEscapeKey);
   }
 });
 
