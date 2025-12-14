@@ -167,12 +167,13 @@ const formatTimezoneForDisplay = (timezone) => {
 
 const saveChanges = () => {
   const formData = formPopupRef.value.getFormData();
+  console.log("Form data:", formData); // Add this for debugging
   if (!formData?.nodeType || !formData?.title) return;
 
   // For dateTime nodes, pass the timezone if selected
   const defaultValues = {};
-  if (formData.nodeType === "dateTime" && formData.timezone) {
-    defaultValues.timezone = formData.timezone;
+  if (formData.nodeType === "dateTime") {
+    defaultValues.timezone = formData.timezone || "UTC";
   }
 
   flowStore.addNodeWithEdge({

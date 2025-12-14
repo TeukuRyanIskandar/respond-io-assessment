@@ -96,10 +96,12 @@ export const useFlowStore = defineStore("flow", {
       this.edges = this.edges.filter((e) => e.id !== edgeId);
     },
 
-    async addNodeWithEdge({ parentId, formData }) {
+    async addNodeWithEdge({ parentId, formData, defaultValues = {} }) {
+      // Add defaultValues parameter
       const newNodeId = `node-${Date.now()}`;
 
-      const timezone = defaultValues.timezone || DEFAULT_TIMEZONE;
+      // Use the timezone from defaultValues if provided, otherwise use DEFAULT_TIMEZONE
+      const selectedTimezone = defaultValues.timezone || DEFAULT_TIMEZONE;
 
       const nodeDataByType = {
         addComment: {
@@ -119,7 +121,7 @@ export const useFlowStore = defineStore("flow", {
 
         dateTime: {
           times: DEFAULT_BUSINESS_HOURS,
-          timezone: timezone,
+          timezone: selectedTimezone, // Use the selected timezone
           action: "businessHours",
         },
       };
