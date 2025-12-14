@@ -1,8 +1,8 @@
 <template>
   <SheetContent side="right" class="w-[420px]">
     <SheetHeader>
-      <SheetTitle>
-        {{ displayTitle || "Node Details" }}
+      <SheetTitle class="flex items-center">
+        <component :is="drawerIcon"/> {{ displayTitle || "Node Details" }}
       </SheetTitle>
       <SheetDescription>
         {{ displayDescription || "Node description" }}
@@ -23,13 +23,19 @@ import {
 } from "@/components/ui/sheet";
 import { useFlowStore } from "@/stores/flowStore";
 import { computed } from "vue";
-
 import AddComment from "./drawerContent/AddComment.vue";
 import SendMessage from "./drawerContent/SendMessage.vue";
 import DateTime from "./drawerContent/DateTime.vue";
+import {
+  CalendarDays,
+  CircleAlert,
+  CircleCheck,
+  MessageSquareMore,
+  SendHorizonal,
+  Zap,
+} from "lucide-vue-next";
 
 const flowStore = useFlowStore();
-
 const node = computed(() => flowStore.selectedNodeNormalized);
 
 const displayTitle = computed(() => node.value?.displayName);
@@ -42,13 +48,13 @@ const displayDescription = computed(() => {
   switch (node.value.type) {
     case "trigger":
       return `Triggers on: ${
-        data.type === "conversationOpened" ? "opening conversation" : "unknown"
+        data?.type === "conversationOpened" ? "opening conversation" : "unknown"
       }`;
     case "dateTime":
       return "Configure business hours for each day of the week";
     case "dateTimeConnector":
-      return `Actions to perform  when condition ${
-        data.connectorType === "success" ? "succeeds" : "fails"
+      return `Actions to perform when condition ${
+        data?.connectorType === "success" ? "succeeds" : "fails"
       }`;
     case "addComment":
       return "Internal notes and comments for this workflow step";
@@ -74,6 +80,27 @@ const drawerComponent = computed(() => {
       return SendMessage;
     case "dateTime":
       return DateTime;
+    default:
+      return null;
+  }
+});
+
+const drawerIcon = computed(() => {
+  if (!node.value) return null;
+
+  const data = node.value.nodeData;
+
+  switch (node.value.type) {
+    case "trigger":
+      return Zap;
+    case "addComment":
+      return MessageSquareMore;
+    case "sendMessage":
+      return SendHorizonal;
+    case "dateTime":
+      return CalendarDays;
+    case "dateTimeConnector":
+      return data?.connectorType === "success" ? CircleCheck : CircleAlert;
     default:
       return null;
   }
