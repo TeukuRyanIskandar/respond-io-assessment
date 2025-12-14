@@ -23,8 +23,10 @@ import {
 } from "@/components/ui/sheet";
 import { useFlowStore } from "@/stores/flowStore";
 import { computed } from "vue";
+
 import AddComment from "./drawerContent/AddComment.vue";
 import SendMessage from "./drawerContent/SendMessage.vue";
+import DateTime from "./drawerContent/DateTime.vue";
 
 const flowStore = useFlowStore();
 
@@ -42,21 +44,16 @@ const displayDescription = computed(() => {
       return `Triggers on: ${
         data.type === "conversationOpened" ? "opening conversation" : "unknown"
       }`;
-
     case "dateTime":
-      return `Business hours: ${data.times?.length || 0} days`;
-
+      return "Configure business hours for each day of the week";
     case "dateTimeConnector":
       return `Actions to perform  when condition ${
         data.connectorType === "success" ? "succeeds" : "fails"
       }`;
-
     case "addComment":
-      return `Comment: ${data.comment || "No comment"}`;
-    
+      return "Internal notes and comments for this workflow step";
     case "sendMessage":
-      return 'Automated messages to send to customers';
-
+      return "Automated messages to send to customers";
     default:
       return "";
   }
@@ -75,10 +72,8 @@ const drawerComponent = computed(() => {
       return AddComment;
     case "sendMessage":
       return SendMessage;
-
-    // case "sendMessage":
-    //   return SendMessage
-
+    case "dateTime":
+      return DateTime;
     default:
       return null;
   }
