@@ -116,7 +116,10 @@ const displayDescription = computed(() => {
         parts.push(`${attachments.length} attachment(s)`);
       return parts.join(", ");
     case "dateTime":
-      return `Business hours: ${nodeData.times?.length || 0} days`;
+      // Get timezone or default to UTC
+      const timezone = nodeData.timezone || "UTC";
+      // Format timezone nicely
+      return `Business Hours - ${formatTimezoneForDisplay(timezone)}`;
     case "dateTimeConnector":
       return `Connector: ${nodeData.connectorType || "unknown"}`;
     case "addComment":
@@ -128,13 +131,54 @@ const displayDescription = computed(() => {
   }
 });
 
+// Helper function to format timezone for display
+const formatTimezoneForDisplay = (timezone) => {
+  if (!timezone) return "UTC";
+
+  try {
+    if (timezone === "UTC") return "UTC";
+
+    // Extract city name
+    const parts = timezone.split("/");
+    const city =
+      parts.length > 1 ? parts[parts.length - 1].replace(/_/g, " ") : timezone;
+
+    // Get UTC offset
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      timeZoneName: "short",
+    });
+    const partsFormatted = formatter.formatToParts(now);
+    const tzPart = partsFormatted.find((part) => part.type === "timeZoneName");
+
+    if (tzPart) {
+      // Format like "New York (EST)" or "London (GMT+1)"
+      const tzAbbr = tzPart.value.replace("GMT", "").replace("UTC", "");
+      return `${city} (${tzAbbr})`;
+    }
+
+    return city;
+  } catch (error) {
+    console.error("Error formatting timezone:", error);
+    return timezone;
+  }
+};
+
 const saveChanges = () => {
   const formData = formPopupRef.value.getFormData();
   if (!formData?.nodeType || !formData?.title) return;
 
+  // For dateTime nodes, pass the timezone if selected
+  const defaultValues = {};
+  if (formData.nodeType === "dateTime" && formData.timezone) {
+    defaultValues.timezone = formData.timezone;
+  }
+
   flowStore.addNodeWithEdge({
     parentId: props.id,
     formData,
+    defaultValues,
   });
 
   formPopupRef.value.resetForm();

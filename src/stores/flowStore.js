@@ -1,7 +1,10 @@
 import { defineStore } from "pinia";
 import { nextTick } from "vue";
 import { nodePositioning } from "@/utils/nodePositioning";
-import { DEFAULT_BUSINESS_HOURS, DEFAULT_TIMEZONE } from "@/constants/flowConstants";
+import {
+  DEFAULT_BUSINESS_HOURS,
+  DEFAULT_TIMEZONE,
+} from "@/constants/flowConstants";
 
 export const useFlowStore = defineStore("flow", {
   state: () => ({
@@ -96,6 +99,8 @@ export const useFlowStore = defineStore("flow", {
     async addNodeWithEdge({ parentId, formData }) {
       const newNodeId = `node-${Date.now()}`;
 
+      const timezone = defaultValues.timezone || DEFAULT_TIMEZONE;
+
       const nodeDataByType = {
         addComment: {
           comment: formData.description || "",
@@ -114,7 +119,7 @@ export const useFlowStore = defineStore("flow", {
 
         dateTime: {
           times: DEFAULT_BUSINESS_HOURS,
-          timezone: DEFAULT_TIMEZONE,
+          timezone: timezone,
           action: "businessHours",
         },
       };
