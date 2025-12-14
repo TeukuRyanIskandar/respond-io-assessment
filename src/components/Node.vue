@@ -3,9 +3,9 @@
     class="flex flex-col items-center"
     @click.stop="handleNodeClick"
   >
-    <Card :class="[nodeBorder]">
+    <Card :class="[nodeBorder, nodeBackground]">
       <CardHeader>
-        <CardTitle>{{ displayTitle }}</CardTitle>
+        <CardTitle :class="[nodeText]">{{ displayTitle }}</CardTitle>
       </CardHeader>
       <CardContent v-if="props.type !== 'dateTimeConnector'">
         <p>{{ displayDescription }}</p>
@@ -150,8 +150,28 @@ const nodeBorder = computed(() => {
       return "border-2 border-green-500";
     case "dateTime":
       return "border-2 border-amber-500";
+    case "dateTimeConnector":
+      return data.connectorType === "success" 
+        ? "border-2 border-blue-500" 
+        : "border-2 border-red-500";
     default:
-      return "";
+      return "border-2 border-gray-400";
   }
+});
+
+const nodeBackground = computed(() => {
+  if (props.type !== "dateTimeConnector") return "";
+  
+  const data = props.data.nodeData || props.data.data || {};
+  
+  return data.connectorType === "success" 
+    ? "bg-blue-500" 
+    : "bg-red-500";
+});
+
+const nodeText = computed(() => {
+  if (props.type !== "dateTimeConnector") return "";
+  
+  return "text-white"
 });
 </script>
