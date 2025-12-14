@@ -37,6 +37,20 @@ export const useFlowStore = defineStore("flow", {
         state.nodes.find((node) => node.id === state.selectedNodeId) || null
       );
     },
+    selectedNodeNormalized: (state) => {
+      const node = state.nodes.find((n) => n.id === state.selectedNodeId);
+      if (!node) return null;
+
+      return {
+        ...node,
+        displayName:
+          node.data?.name ||
+          node.data?.nodeData?.name ||
+          (node.type === "trigger" ? "Trigger" : node.type),
+
+        nodeData: node.data?.nodeData || node.data || {},
+      };
+    },
   },
 
   actions: {

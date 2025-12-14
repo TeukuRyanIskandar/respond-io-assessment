@@ -1,13 +1,13 @@
 <template>
-  <div 
+  <div
     class="flex flex-col items-center"
-    @click.stop="flowStore.selectNode(props.id)"  
+    @click.stop="flowStore.selectNode(props.id)"
   >
     <Card>
       <CardHeader>
         <CardTitle>{{ displayTitle }}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent v-if="props.type !== 'dateTimeConnector'">
         <p>{{ displayDescription }}</p>
       </CardContent>
     </Card>
@@ -53,21 +53,28 @@ const props = defineProps({
   id: String,
   data: Object,
   type: String,
-})
+});
 
-const showDialog = ref(false)
-const formPopupRef = ref(null)
-const flowStore = useFlowStore()
+const showDialog = ref(false);
+const formPopupRef = ref(null);
+const flowStore = useFlowStore();
 
-const displayTitle = computed(() =>
-  props.data.name || props.data.nodeData?.name || props.type || 'Node'
-)
+const displayTitle = computed(
+  () =>
+    props.data.name ||
+    props.data.nodeData?.name ||
+    (props.type === "trigger" ? "Trigger" : props.type || "Node")
+);
 
 const displayDescription = computed(() => {
   const nodeData = props.data.nodeData || props.data.data || {};
   switch (props.type) {
     case "trigger":
-      return `Triggers on: ${nodeData.type || "unknown"}`;
+      return `Triggers on: ${
+        nodeData.type === "conversationOpened"
+          ? "opening conversation"
+          : "unknown"
+      }`;
     case "sendMessage":
       const messages = nodeData.payload || [];
       const textMessages = messages.filter((m) => m.type === "text");
@@ -96,15 +103,15 @@ const displayDescription = computed(() => {
 });
 
 const saveChanges = () => {
-  const formData = formPopupRef.value.getFormData()
-  if (!formData?.nodeType || !formData?.title) return
+  const formData = formPopupRef.value.getFormData();
+  if (!formData?.nodeType || !formData?.title) return;
 
   flowStore.addNodeWithEdge({
     parentId: props.id,
     formData,
-  })
+  });
 
-  formPopupRef.value.resetForm()
-  showDialog.value = false
-}
+  formPopupRef.value.resetForm();
+  showDialog.value = false;
+};
 </script>

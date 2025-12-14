@@ -56,7 +56,7 @@ export const SIDEBAR_DESCRIPTIONS = {
     success: "Actions to perform when condition succeeds",
     failure: "Actions to perform when condition fails",
   },
-  addComment: "Internal notes and comments for this workflow step",
+  addComment: "Internal notes and` comments for this workflow step",
 };
 
 export const POSITIONS_MAP = {
@@ -68,3 +68,8 @@ export const POSITIONS_MAP = {
   b0653a: { x: 345, y: 700 }, // Welcome message
   e879e4: { x: 752, y: 900 }, // Add comment
 };
+
+export const TRIGGER_TYPES = {
+  "conversationOpened": "Conversation Opened",
+  "messageReceived": "Message Received"
+}
