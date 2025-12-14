@@ -1,7 +1,7 @@
 <template>
   <div
     class="flex flex-col items-center"
-    @click.stop="flowStore.selectNode(props.id)"
+    @click.stop="handleNodeClick"
   >
     <Card>
       <CardHeader>
@@ -15,12 +15,12 @@
       class="rounded-full"
       variant="outline"
       size="icon"
-      @click="showDialog = true"
+      @click.stop="handleButtonClick"
     >
       <Plus />
     </Button>
-    <Dialog :open="showDialog" @update:open="showDialog = $event">
-      <DialogContent>
+    <Dialog :open="showDialog" @update:open="handleDialogUpdate">
+      <DialogContent @click.stop>
         <DialogHeader>
           <DialogTitle>Create new node</DialogTitle>
         </DialogHeader>
@@ -58,6 +58,22 @@ const props = defineProps({
 const showDialog = ref(false);
 const formPopupRef = ref(null);
 const flowStore = useFlowStore();
+
+const handleNodeClick = () => {
+  // Only select node if dialog is not open
+  if (!showDialog.value) {
+    flowStore.selectNode(props.id);
+  }
+};
+
+const handleButtonClick = (event) => {
+  event.stopPropagation();
+  showDialog.value = true;
+};
+
+const handleDialogUpdate = (value) => {
+  showDialog.value = value;
+};
 
 const displayTitle = computed(
   () =>
