@@ -24,6 +24,7 @@ import {
 import { useFlowStore } from "@/stores/flowStore";
 import { computed } from "vue";
 import AddComment from "./drawerContent/AddComment.vue";
+import SendMessage from "./drawerContent/SendMessage.vue";
 
 const flowStore = useFlowStore();
 
@@ -52,6 +53,9 @@ const displayDescription = computed(() => {
 
     case "addComment":
       return `Comment: ${data.comment || "No comment"}`;
+    
+    case "sendMessage":
+      return 'Automated messages to send to customers';
 
     default:
       return "";
@@ -69,11 +73,11 @@ const drawerComponent = computed(() => {
   switch (node.value.type) {
     case "addComment":
       return AddComment;
+    case "sendMessage":
+      return SendMessage;
 
     // case "sendMessage":
     //   return SendMessage
-    // case "dateTime":
-    //   return BusinessHours
 
     default:
       return null;
