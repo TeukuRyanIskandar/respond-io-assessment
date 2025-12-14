@@ -1,8 +1,9 @@
 <template>
-  <SheetContent side="right" class="w-[420px]">
+  <SheetContent side="right" class="w-[420px]" :class="[drawerBackground]">
     <SheetHeader>
-      <SheetTitle class="flex items-center">
-        <component :is="drawerIcon"/> {{ displayTitle || "Node Details" }}
+      <SheetTitle class="flex items-center gap-2">
+        <component :is="drawerIcon" class="w-5 h-5" :class="[iconTextColour]" />
+        {{ displayTitle || "Node Details" }}
       </SheetTitle>
       <SheetDescription>
         {{ displayDescription || "Node description" }}
@@ -42,9 +43,8 @@ const displayTitle = computed(() => node.value?.displayName);
 
 const displayDescription = computed(() => {
   if (!node.value) return "";
-
   const data = node.value.nodeData;
-
+  
   switch (node.value.type) {
     case "trigger":
       return `Triggers on: ${
@@ -72,7 +72,7 @@ const showDetailsSection = computed(() => {
 
 const drawerComponent = computed(() => {
   if (!node.value) return null;
-
+  
   switch (node.value.type) {
     case "addComment":
       return AddComment;
@@ -87,9 +87,8 @@ const drawerComponent = computed(() => {
 
 const drawerIcon = computed(() => {
   if (!node.value) return null;
-
   const data = node.value.nodeData;
-
+  
   switch (node.value.type) {
     case "trigger":
       return Zap;
@@ -103,6 +102,46 @@ const drawerIcon = computed(() => {
       return data?.connectorType === "success" ? CircleCheck : CircleAlert;
     default:
       return null;
+  }
+});
+
+const drawerBackground = computed(() => {
+  if (!node.value) return "";
+  const data = node.value.nodeData;
+  
+  switch (node.value.type) {
+    case "trigger":
+      return "bg-rose-100";
+    case "addComment":
+      return "bg-gray-100";
+    case "sendMessage":
+      return "bg-green-100";
+    case "dateTime":
+      return "bg-amber-100";
+    case "dateTimeConnector":
+      return data?.connectorType === "success" ? "bg-blue-100" : "bg-red-100";
+    default:
+      return "";
+  }
+});
+
+const iconTextColour = computed(() => {
+  if (!node.value) return "";
+  const data = node.value.nodeData;
+  
+  switch (node.value.type) {
+    case "trigger":
+      return "text-rose-600";
+    case "addComment":
+      return "text-gray-600";
+    case "sendMessage":
+      return "text-green-600";
+    case "dateTime":
+      return "text-amber-600";
+    case "dateTimeConnector":
+      return data?.connectorType === "success" ? "text-blue-600" : "text-red-600";
+    default:
+      return "";
   }
 });
 </script>
