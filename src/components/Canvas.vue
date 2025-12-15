@@ -34,8 +34,7 @@ const nodeTypes = {
 };
 
 onMounted(async () => {
-  const res = await fetch("/payload.json");
-  // const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent("https://respond-io-fe-bucket.s3.ap-southeast-1.amazonaws.com/candidate-assessments/payload.json"));
+  const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent("https://respond-io-fe-bucket.s3.ap-southeast-1.amazonaws.com/candidate-assessments/payload.json"));
   const data = await res.json();
 
   const nodes = data.map((node) => ({
