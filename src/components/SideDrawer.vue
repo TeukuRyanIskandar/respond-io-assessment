@@ -55,7 +55,6 @@
 
       <!-- Editable Description -->
       <SheetDescription
-        class="pt-4"
         v-if="
           flowStore.selectedNode?.type !== 'sendMessage' &&
           flowStore.selectedNode?.type !== 'addComment'
@@ -98,7 +97,7 @@
 
     <div
       v-if="showDetailsSection && drawerComponent"
-      class="mt-4 space-y-4 flex-1 overflow-auto"
+      class="space-y-4 flex-1 overflow-auto"
     >
       <component :is="drawerComponent" />
     </div>

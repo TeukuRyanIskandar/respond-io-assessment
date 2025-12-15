@@ -40,13 +40,20 @@ export const useFlowStore = defineStore("flow", {
       const node = state.nodes.find((n) => n.id === state.selectedNodeId);
       if (!node) return null;
 
+      const rawData = node.data || {};
+
       return {
         ...node,
         displayName:
-          node.data?.name ||
-          node.data?.nodeData?.name ||
+          rawData.name ||
+          rawData.nodeData?.name ||
           (node.type === "trigger" ? "Trigger" : node.type),
-        nodeData: node.data?.nodeData || node.data || {},
+
+        nodeData: {
+          ...rawData,
+          ...(rawData.nodeData || {}),
+          payload: rawData.nodeData?.payload ?? rawData.payload ?? [],
+        },
       };
     },
   },
@@ -96,12 +103,8 @@ export const useFlowStore = defineStore("flow", {
       this.edges = this.edges.filter((e) => e.id !== edgeId);
     },
 
-    async addNodeWithEdge({ parentId, formData, defaultValues = {} }) {
-      // Add defaultValues parameter
+    async addNodeWithEdge({ parentId, formData }) {
       const newNodeId = `node-${Date.now()}`;
-
-      // Use the timezone from defaultValues if provided, otherwise use DEFAULT_TIMEZONE
-      const selectedTimezone = defaultValues.timezone || DEFAULT_TIMEZONE;
 
       const nodeDataByType = {
         addComment: {
@@ -121,7 +124,7 @@ export const useFlowStore = defineStore("flow", {
 
         dateTime: {
           times: DEFAULT_BUSINESS_HOURS,
-          timezone: selectedTimezone, // Use the selected timezone
+          timezone: DEFAULT_TIMEZONE,
           action: "businessHours",
         },
       };

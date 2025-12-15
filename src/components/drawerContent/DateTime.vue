@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 mt-1">
     <!-- Business Hour Rows -->
     <div class="space-y-3">
       <div
