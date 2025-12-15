@@ -168,7 +168,6 @@ const messages = ref([]);
 const textareaRefs = ref([]);
 const fileInput = ref(null);
 
-/* ---------- INIT FROM STORE ---------- */
 watch(
   node,
   (newNode) => {
@@ -187,7 +186,6 @@ watch(
   { immediate: true }
 );
 
-/* ---------- MESSAGE LOGIC ---------- */
 const handleMessageInput = (index) => {
   const msg = messages.value[index];
   msg.hasChanges = msg.editableText !== msg.originalText;
@@ -261,7 +259,6 @@ const setTextareaRef = (index, el) => {
   textareaRefs.value[index] = el;
 };
 
-/* ---------- KEYBOARD ---------- */
 const handleKeydown = (e) => {
   const index = messages.value.findIndex((m) => m.hasChanges);
   if (index === -1) return;
@@ -273,7 +270,6 @@ const handleKeydown = (e) => {
 window.addEventListener("keydown", handleKeydown);
 onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
-/* ---------- ATTACHMENTS ---------- */
 const attachments = computed(
   () =>
     node.value?.nodeData?.payload?.filter((p) => p.type === "attachment") || []

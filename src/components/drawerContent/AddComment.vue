@@ -75,7 +75,6 @@ import { Button } from "@/components/ui/button";
 const flowStore = useFlowStore();
 const node = computed(() => flowStore.selectedNodeNormalized);
 
-// Refs
 const textareaRef = ref(null);
 const editableComment = ref("");
 const originalComment = ref("");
@@ -88,7 +87,6 @@ const isNearLimit = computed(() => {
   return editableComment.value.length > 900;
 });
 
-/* ---------- VALIDATION ---------- */
 const validateComment = (comment) => {
   if (comment.trim().length === 0) {
     return { isValid: false, error: "Comment cannot be empty" };
@@ -99,7 +97,6 @@ const validateComment = (comment) => {
   return { isValid: true, error: "" };
 };
 
-/* ---------- WATCH NODE CHANGES ---------- */
 watch(
   node,
   (newNode) => {
@@ -122,7 +119,6 @@ watch(
   { immediate: true }
 );
 
-/* ---------- HANDLE INPUT ---------- */
 const handleInput = () => {
   hasChanges.value = editableComment.value !== originalComment.value;
   
@@ -137,7 +133,6 @@ const handleInput = () => {
   }
 };
 
-/* ---------- SAVE COMMENT ---------- */
 const saveComment = () => {
   if (!node.value) return;
 
@@ -168,7 +163,6 @@ const saveComment = () => {
   hasError.value = false;
 };
 
-/* ---------- CANCEL EDIT ---------- */
 const cancelEdit = () => {
   editableComment.value = originalComment.value;
   hasChanges.value = false;
@@ -186,7 +180,6 @@ const cancelEdit = () => {
   });
 };
 
-/* ---------- KEYBOARD SHORTCUTS ---------- */
 const handleKeydown = (event) => {
   if (!hasChanges.value) return;
   
