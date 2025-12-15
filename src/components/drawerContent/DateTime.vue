@@ -3,7 +3,7 @@
     <!-- Business Hour Rows -->
     <div class="space-y-3">
       <div
-        v-for="(item, index) in times"
+        v-for="(item, index) in editableTimes"
         :key="item.day"
         class="flex items-center gap-2"
       >
@@ -25,26 +25,11 @@
           class="flex-1 min-w-0 bg-white"
         />
       </div>
-    </div>
-
-    <!-- Region -->
-    <div class="space-y-1">
-      <label class="text-xs font-semibold">Region</label>
-
-      <Select v-model="selectedRegion">
-        <SelectTrigger class="bg-white">
-          <SelectValue placeholder="Select region" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="region in regions" :key="region" :value="region">
-            {{ region }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <p v-if="timeError" class="text-xs text-red-500">{{ timeError }}</p>
     </div>
 
     <!-- Timezone -->
-    <div v-if="selectedRegion" class="space-y-1">
+    <div class="space-y-1">
       <label class="text-xs font-semibold">Time Zone</label>
 
       <Popover v-model:open="open">
@@ -66,14 +51,16 @@
             <CommandList>
               <CommandGroup>
                 <CommandItem
-                  v-for="tz in filteredTimezones"
+                  v-for="tz in timezones"
                   :key="tz"
                   :value="tz"
                   @select="selectTimezone(tz)"
                 >
                   <Check
                     class="mr-2 h-4 w-4"
-                    :class="tz === timezone ? 'opacity-100' : 'opacity-0'"
+                    :class="
+                      tz === editableTimezone ? 'opacity-100' : 'opacity-0'
+                    "
                   />
                   {{ formatTimezone(tz) }}
                 </CommandItem>
@@ -82,6 +69,24 @@
           </Command>
         </PopoverContent>
       </Popover>
+      <p v-if="timezoneError" class="text-xs text-red-500">
+        {{ timezoneError }}
+      </p>
+    </div>
+
+    <!-- Save / Cancel -->
+    <div v-if="hasChanges" class="flex justify-end gap-2 mt-4">
+      <Button variant="ghost" @click="cancelEdit" class="hover:bg-red-200">
+        Cancel
+      </Button>
+      <Button
+        variant="ghost"
+        :disabled="!isValid"
+        @click="saveEdit"
+        class="hover:bg-gray-200"
+      >
+        Save
+      </Button>
     </div>
   </div>
 </template>
@@ -92,13 +97,6 @@ import { useFlowStore } from "@/stores/flowStore";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import {
   Command,
   CommandEmpty,
@@ -117,23 +115,26 @@ import { Check, ChevronsUpDown } from "lucide-vue-next";
 const flowStore = useFlowStore();
 const node = computed(() => flowStore.selectedNodeNormalized);
 
-const times = computed({
-  get() {
-    return node.value?.nodeData?.times || [];
-  },
-  set(value) {
-    updateNode({ times: value });
-  },
-});
+// Editable state
+const editableTimes = ref([]);
+const editableTimezone = ref("");
+const originalTimes = ref([]);
+const originalTimezone = ref("");
 
-const timezone = computed({
-  get() {
-    return node.value?.nodeData?.timezone || "";
+watch(
+  node,
+  (n) => {
+    if (n) {
+      editableTimes.value = JSON.parse(JSON.stringify(n.nodeData.times || []));
+      editableTimezone.value = n.nodeData.timezone || "UTC";
+
+      // Save original for change detection
+      originalTimes.value = JSON.parse(JSON.stringify(n.nodeData.times || []));
+      originalTimezone.value = n.nodeData.timezone || "UTC";
+    }
   },
-  set(value) {
-    updateNode({ timezone: value });
-  },
-});
+  { immediate: true }
+);
 
 const updateNode = (partial) => {
   if (!node.value) return;
@@ -147,53 +148,73 @@ const updateNode = (partial) => {
       },
     },
   });
+
+  // Update originals after save
+  originalTimes.value = JSON.parse(JSON.stringify(editableTimes.value));
+  originalTimezone.value = editableTimezone.value;
 };
 
-const allTimezones = Intl.supportedValuesOf("timeZone");
-
-const regions = computed(() => {
-  const set = new Set();
-  allTimezones.forEach((tz) => {
-    const region = tz.split("/")[0];
-    if (region !== "UTC" && region !== "Etc") {
-      set.add(region);
-    }
-  });
-  return [...set].sort();
+// Validation
+const timeError = computed(() => {
+  for (const t of editableTimes.value) {
+    if (!t.startTime || !t.endTime) return "Start and end times are required.";
+    if (t.startTime >= t.endTime) return "Start time must be before end time.";
+  }
+  return "";
 });
 
-const selectedRegion = ref("");
+const timezoneError = computed(() => {
+  if (!editableTimezone.value) return "Timezone is required.";
+  return "";
+});
+
+const isValid = computed(() => !timeError.value && !timezoneError.value);
+
+// Save / Cancel
+const saveEdit = () => {
+  if (!isValid.value) return;
+  updateNode({
+    times: editableTimes.value,
+    timezone: editableTimezone.value,
+  });
+};
+
+const cancelEdit = () => {
+  editableTimes.value = JSON.parse(JSON.stringify(originalTimes.value));
+  editableTimezone.value = originalTimezone.value;
+};
+
+// Detect changes
+const hasChanges = computed(() => {
+  return (
+    JSON.stringify(editableTimes.value) !==
+      JSON.stringify(originalTimes.value) ||
+    editableTimezone.value !== originalTimezone.value
+  );
+});
+
+// Hardcoded timezones
+const timezones = [
+  "UTC",
+  "Asia/Kuala_Lumpur",
+  "Europe/London",
+  "America/New_York",
+  "Australia/Sydney",
+];
+
 const open = ref(false);
 
-const filteredTimezones = computed(() =>
-  selectedRegion.value
-    ? allTimezones.filter((tz) => tz.startsWith(selectedRegion.value + "/"))
-    : []
-);
-
 const selectTimezone = (tz) => {
-  timezone.value = tz;
+  editableTimezone.value = tz;
   open.value = false;
 };
 
 const timezoneLabel = computed(() =>
-  timezone.value ? formatTimezone(timezone.value) : "Select time zone..."
+  editableTimezone.value
+    ? formatTimezone(editableTimezone.value)
+    : "Select time zone..."
 );
 
-/**
- * Init region from timezone
- */
-watch(
-  timezone,
-  (tz) => {
-    if (tz) selectedRegion.value = tz.split("/")[0];
-  },
-  { immediate: true }
-);
-
-/**
- * Formatting helpers (unchanged logic)
- */
 const formatTimezone = (tz) => {
   try {
     const city = tz.split("/").pop().replace(/_/g, " ");
@@ -213,13 +234,4 @@ const getUTCOffset = (tz) => {
   const hours = Math.floor(Math.abs(offset));
   return `${sign}${hours}`;
 };
-
-watch(selectedRegion, (newRegion) => {
-  if (!timezone.value) return;
-
-  const tzRegion = timezone.value.split("/")[0];
-  if (tzRegion !== newRegion) {
-    timezone.value = "";
-  }
-});
 </script>
