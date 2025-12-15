@@ -4,7 +4,13 @@
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <Label>Messages</Label>
-        <Button size="sm" variant="outline" @click="addNewMessage">
+        <Button
+          size="sm"
+          variant="outline"
+          @click="addNewMessage"
+          :disabled="messages.length >= maxMessages"
+          title="Maximum 5 messages allowed"
+        >
           <Plus class="w-4 h-4 mr-1" />
           Add Message
         </Button>
@@ -39,8 +45,16 @@
               ref="(el) => setTextareaRef(index, el)"
               class="min-h-[100px] resize-y"
               placeholder="Add message..."
-              @input="handleMessageInput(index)"
+              @input="() => handleMessageInput(index)"
+              @keyup="() => handleMessageInput(index)"
             />
+
+            <p
+              v-if="message.hasChanges && !message.editableText.trim()"
+              class="text-xs text-red-500"
+            >
+              Message cannot be empty
+            </p>
 
             <!-- Save / Cancel -->
             <div
@@ -52,6 +66,7 @@
                 variant="ghost"
                 class="hover:bg-gray-200"
                 @click="saveMessage(index)"
+                :disabled="!message.editableText.trim()"
               >
                 Save
               </Button>
@@ -80,7 +95,7 @@
     </div>
 
     <!-- Attachments -->
-    <div class="space-y-3">
+    <div class="space-y-2">
       <div class="flex items-center justify-between">
         <Label>Attachments</Label>
         <Button size="sm" variant="outline" @click="triggerFileUpload">
@@ -89,12 +104,16 @@
         </Button>
       </div>
 
+      <p class="text-xs text-muted-foreground">
+        Only image files are allowed (jpg, png, gif, webp, svg).
+      </p>
+
       <input
         ref="fileInput"
         type="file"
         class="hidden"
         multiple
-        accept="image/*,.pdf,.doc,.docx,.txt"
+        accept="image/*"
         @change="handleFileUpload"
       />
 
@@ -134,13 +153,7 @@
 import { ref, computed, watch, nextTick, onUnmounted } from "vue";
 import { useFlowStore } from "@/stores/flowStore";
 
-import {
-  Plus,
-  Trash2,
-  Upload,
-  File,
-  MessageSquare,
-} from "lucide-vue-next";
+import { Plus, Trash2, Upload, File, MessageSquare } from "lucide-vue-next";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,6 +163,7 @@ import { Card } from "@/components/ui/card";
 const flowStore = useFlowStore();
 const node = computed(() => flowStore.selectedNodeNormalized);
 
+const maxMessages = 5;
 const messages = ref([]);
 const textareaRefs = ref([]);
 const fileInput = ref(null);
@@ -182,6 +196,7 @@ const handleMessageInput = (index) => {
 const saveMessage = (index) => {
   const msg = messages.value[index];
   const trimmed = msg.editableText.trim();
+  if (!trimmed) return;
 
   msg.text = trimmed;
   msg.editableText = trimmed;
@@ -202,6 +217,8 @@ const cancelEdit = (index) => {
 };
 
 const addNewMessage = () => {
+  if (messages.value.length >= maxMessages) return;
+
   messages.value.push({
     text: "",
     editableText: "",
@@ -257,14 +274,17 @@ window.addEventListener("keydown", handleKeydown);
 onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
 /* ---------- ATTACHMENTS ---------- */
-const attachments = computed(() =>
-  node.value?.nodeData?.payload?.filter((p) => p.type === "attachment") || []
+const attachments = computed(
+  () =>
+    node.value?.nodeData?.payload?.filter((p) => p.type === "attachment") || []
 );
 
 const isImage = (src) => {
   if (!src) return false;
   const clean = src.split("?")[0];
-  return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(clean) || src.startsWith("blob:");
+  return (
+    /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(clean) || src.startsWith("blob:")
+  );
 };
 
 const triggerFileUpload = () => fileInput.value?.click();
@@ -275,7 +295,10 @@ const handleFileUpload = async (e) => {
 
   const payload = node.value.nodeData?.payload || [];
 
-  const newAttachments = files.map((file) => ({
+  // Filter only images
+  const validFiles = files.filter((file) => file.type.startsWith("image/"));
+
+  const newAttachments = validFiles.map((file) => ({
     type: "attachment",
     attachment: URL.createObjectURL(file),
   }));
@@ -295,8 +318,6 @@ const handleFileUpload = async (e) => {
 
 const deleteAttachment = (index) => {
   const payload = node.value.nodeData?.payload || [];
-  const attachmentsOnly = payload.filter((p) => p.type === "attachment");
-
   let count = 0;
   const realIndex = payload.findIndex((p) => {
     if (p.type === "attachment") {
