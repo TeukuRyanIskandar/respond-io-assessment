@@ -6,7 +6,7 @@
   >
     <SheetHeader>
       <div class="space-y-2">
-        <!-- Editable Title -->
+        <!-- Title Display -->
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <component
@@ -15,9 +15,9 @@
               :class="[iconTextColour]"
             />
             <div class="relative flex-1">
-              <!-- Editable Title Textarea (when editing) -->
+              <!-- Editable Title Textarea (when editing and NOT dateTimeConnector) -->
               <Textarea
-                v-if="isEditingTitle"
+                v-if="isEditingTitle && !isDateTimeConnector"
                 v-model="editableTitle"
                 class="text-lg leading-7 font-semibold border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[auto] focus:outline-none focus:shadow-none focus:border-none overflow-hidden transition-all duration-200"
                 rows="1"
@@ -27,20 +27,25 @@
                 autofocus
                 ref="titleTextareaRef"
               />
-              <!-- Static Title (when not editing) -->
+              <!-- Static Title (when not editing OR dateTimeConnector) -->
               <h3
-                v-else
-                class="text-lg font-semibold cursor-pointer hover:bg-black/5 p-1 -m-1 rounded transition-all duration-200"
-                @click="startEditingTitle"
+                v-if="!isEditingTitle || isDateTimeConnector"
+                :class="[
+                  'text-lg font-semibold',
+                  isDateTimeConnector
+                    ? 'select-none'
+                    : 'cursor-pointer hover:bg-black/5 p-1 -m-1 rounded transition-all duration-200',
+                ]"
+                @click="isDateTimeConnector ? null : startEditingTitle()"
               >
-                {{ editableTitle || "Click to edit title" }}
+                {{ editableTitle || (isDateTimeConnector ? nodeTypeLabel : "Click to edit title") }}
               </h3>
             </div>
           </div>
 
-          <!-- Title Action Buttons -->
+          <!-- Title Action Buttons (only show if NOT dateTimeConnector) -->
           <div
-            v-if="isEditingTitle"
+            v-if="isEditingTitle && !isDateTimeConnector"
             class="flex items-center gap-2 pl-[1.75rem]"
           >
             <Button size="sm" variant="ghost" @click="saveTitle">
@@ -53,17 +58,13 @@
         </div>
       </div>
 
-      <!-- Editable Description -->
-      <SheetDescription
-        v-if="
-          flowStore.selectedNode?.type !== 'sendMessage' &&
-          flowStore.selectedNode?.type !== 'addComment'
-        "
-      >
+      <!-- Description Display -->
+      <SheetDescription>
         <div class="space-y-2">
           <div class="relative">
+            <!-- Editable Description Textarea (when editing and NOT dateTimeConnector) -->
             <Textarea
-              v-if="isEditingDescription"
+              v-if="isEditingDescription && !isDateTimeConnector"
               v-model="editableDescription"
               class="min-h-[80px] w-full transition-all duration-200"
               placeholder="Enter description..."
@@ -73,17 +74,23 @@
               autofocus
               ref="descriptionTextareaRef"
             />
+            <!-- Static Description (when not editing OR dateTimeConnector) -->
             <p
-              v-else
-              class="text-sm text-muted-foreground cursor-pointer hover:bg-black/5 p-2 rounded whitespace-pre-wrap transition-all duration-200"
-              @click="startEditingDescription"
+              v-if="!isEditingDescription || isDateTimeConnector"
+              :class="[
+                'text-sm text-muted-foreground whitespace-pre-wrap',
+                isDateTimeConnector
+                  ? 'select-none p-2'
+                  : 'cursor-pointer hover:bg-black/5 p-2 rounded transition-all duration-200',
+              ]"
+              @click="isDateTimeConnector ? null : startEditingDescription()"
             >
               {{ editableDescription || "Click to add description" }}
             </p>
           </div>
 
-          <!-- Description Action Buttons -->
-          <div v-if="isEditingDescription" class="flex items-center gap-2">
+          <!-- Description Action Buttons (only show if NOT dateTimeConnector) -->
+          <div v-if="isEditingDescription && !isDateTimeConnector" class="flex items-center gap-2">
             <Button size="sm" variant="ghost" @click="saveDescription">
               Save Description
             </Button>
@@ -141,7 +148,6 @@ import {
 } from "@/components/ui/sheet";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
@@ -171,6 +177,32 @@ import DateTime from "./drawerContent/DateTime.vue";
 
 const flowStore = useFlowStore();
 const node = computed(() => flowStore.selectedNodeNormalized);
+
+// Check if current node is dateTimeConnector
+const isDateTimeConnector = computed(() => {
+  return node.value?.type === "dateTimeConnector";
+});
+
+// Node type label (used for dateTimeConnector display)
+const nodeTypeLabel = computed(() => {
+  if (!node.value) return "";
+
+  switch (node.value.type) {
+    case "trigger":
+      return "Trigger";
+    case "addComment":
+      return "Add Comment";
+    case "sendMessage":
+      return "Send Message";
+    case "dateTime":
+      return "Business Hours";
+    case "dateTimeConnector":
+      const type = node.value.nodeData?.connectorType || "";
+      return type === "success" ? "Success Connector" : "Failure Connector";
+    default:
+      return node.value.type || "Node";
+  }
+});
 
 // Refs for textarea focus
 const titleTextareaRef = ref(null);
@@ -243,8 +275,10 @@ const getNodeDescription = (node) => {
   }
 };
 
-// Title editing functionality
+// Title editing functionality (disabled for dateTimeConnector)
 const startEditingTitle = () => {
+  if (isDateTimeConnector.value) return;
+  
   isEditingTitle.value = true;
   nextTick(() => {
     if (titleTextareaRef.value) {
@@ -257,7 +291,7 @@ const startEditingTitle = () => {
 };
 
 const saveTitle = async () => {
-  if (!node.value || editableTitle.value === originalTitle.value) {
+  if (isDateTimeConnector.value || !node.value || editableTitle.value === originalTitle.value) {
     isEditingTitle.value = false;
     return;
   }
@@ -279,12 +313,16 @@ const saveTitle = async () => {
 };
 
 const cancelTitleEdit = () => {
+  if (isDateTimeConnector.value) return;
+  
   editableTitle.value = originalTitle.value;
   isEditingTitle.value = false;
 };
 
-// Description editing functionality
+// Description editing functionality (disabled for dateTimeConnector)
 const startEditingDescription = () => {
+  if (isDateTimeConnector.value) return;
+  
   isEditingDescription.value = true;
   nextTick(() => {
     if (descriptionTextareaRef.value) {
@@ -297,7 +335,7 @@ const startEditingDescription = () => {
 };
 
 const saveDescription = () => {
-  if (!node.value) return;
+  if (isDateTimeConnector.value || !node.value) return;
 
   const description = editableDescription.value.trim();
 
@@ -373,13 +411,15 @@ const saveDescription = () => {
 };
 
 const cancelDescriptionEdit = () => {
+  if (isDateTimeConnector.value) return;
+  
   editableDescription.value = originalDescription.value;
   isEditingDescription.value = false;
 };
 
-// Watch for Escape key press
+// Watch for Escape key press (only for non-dateTimeConnector nodes)
 const handleEscapeKey = (event) => {
-  if (event.key === "Escape") {
+  if (event.key === "Escape" && !isDateTimeConnector.value) {
     if (isEditingTitle.value) {
       cancelTitleEdit();
     } else if (isEditingDescription.value) {
