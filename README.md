@@ -28,25 +28,6 @@ npm run dev
 # 4. Build for production
 npm run build
 
-  
-
-📂 Project Structure
-code Text
-
-    
-src/
-├── components/
-│   ├── ui/              # Reusable Shadcn UI components
-│   ├── drawerContent/   # Node-specific forms (Message, DateTime, Comment)
-│   ├── Canvas.vue       # Main graph wrapper & initialization
-│   ├── Node.vue         # Custom node component
-│   └── SideDrawer.vue   # Right-panel editor container
-├── stores/
-│   └── flowStore.js     # Central state (Nodes, Edges, Actions)
-└── utils/
-    └── nodePositioning.js # Auto-layout algorithm
-
-  
 
 💡 Design Decisions
 1. "Dirty State" Editing Pattern
